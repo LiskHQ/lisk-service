@@ -50,10 +50,12 @@ const mysqlIndex = require('../../../indexdb/mysql');
 
 const accountsIndexSchema = require('./schema/accounts');
 const blocksIndexSchema = require('./schema/blocks');
+const multisignatureIndexSchema = require('./schema/multisignature');
 const transactionsIndexSchema = require('./schema/transactions');
 
 const getAccountsIndex = () => mysqlIndex('accounts', accountsIndexSchema);
 const getBlocksIndex = () => mysqlIndex('blocks', blocksIndexSchema);
+const getMultisignatureIndex = () => mysqlIndex('multisignature', multisignatureIndexSchema);
 const getTransactionsIndex = () => mysqlIndex('transactions', transactionsIndexSchema);
 
 // A boolean mapping against the genesis account addresses to indicate migration status
@@ -432,7 +434,53 @@ const getMultisignatureGroups = async account => {
 	return multisignatureAccount;
 };
 
-const getMultisignatureMemberships = async () => []; // TODO
+const getMultisignatureMemberships = async account => {
+	const multisignatureMemberships = {};
+	const multisignatureDB = await getMultisignatureIndex();
+	const memberInfo = await multisignatureDB.find({ memberAddress: account.address });
+	// Filter out the group address itself
+	const remainingMember = memberInfo.filter(acc => acc.groupAddress !== account.address);
+
+	if (Array.isArray(memberInfo) && memberInfo.length) {
+		multisignatureMemberships.memberships = [];
+		await BluebirdPromise.map(
+			remainingMember,
+			async member => {
+				const result = await getIndexedAccountInfo({ address: member.groupAddress });
+				if (result) multisignatureMemberships.memberships.push({
+					address: result.address,
+					username: result.username,
+					publicKey: result.publicKey,
+				});
+			},
+			{ concurrency: remainingMember.length },
+		);
+	}
+	return multisignatureMemberships;
+};
+
+const resolveMultisignatureInfo = tx => {
+	const multisignatureInfoToIndex = [];
+	tx.asset.mandatoryKeys.forEach(key => {
+		const members = {
+			id: getBase32AddressFromPublicKey(tx.senderPublicKey)
+				.concat('_', getBase32AddressFromPublicKey(key)),
+			memberAddress: getBase32AddressFromPublicKey(key),
+			groupAddress: getBase32AddressFromPublicKey(tx.senderPublicKey),
+		};
+		multisignatureInfoToIndex.push(members);
+	});
+	tx.asset.optionalKeys.forEach(key => {
+		const members = {
+			id: getBase32AddressFromPublicKey(tx.senderPublicKey)
+				.concat('_', getBase32AddressFromPublicKey(key)),
+			memberAddress: getBase32AddressFromPublicKey(key),
+			groupAddress: getBase32AddressFromPublicKey(tx.senderPublicKey),
+		};
+		multisignatureInfoToIndex.push(members);
+	});
+	return multisignatureInfoToIndex;
+};
 
 module.exports = {
 	confirmPublicKey,
@@ -444,4 +492,5 @@ module.exports = {
 	indexAccountsbyPublicKey,
 	getIndexedAccountInfo,
 	getAccountsBySearch,
+	resolveMultisignatureInfo,
 };

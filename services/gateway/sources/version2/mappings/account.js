@@ -43,10 +43,10 @@ module.exports = {
 			publicKey: '=,string',
 			isMandatory: '=,boolean',
 		}],
-		memberships: ['multisignatureMemberships', {
+		memberships: ['multisignatureMemberships.memberships', {
 			address: '=,string',
 			publicKey: '=,string',
-			isMandatory: '=,boolean',
+			username: '=,string',
 		}],
 	},
 	dpos: {
