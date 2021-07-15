@@ -31,6 +31,7 @@ pipeline {
 			when { branch 'development' }
 			steps {
 				sh 'make build-core'
+				sh 'make build-market'
 				sh 'make build-gateway'
 			}
 		}
@@ -41,12 +42,20 @@ pipeline {
 				ENABLE_HTTP_API='http-status,http-version2'
 				ENABLE_WS_API='blockchain,rpc-v2'
 				LISK_CORE_WS='ws://host.docker.internal:8080'
+				GENESIS_HEIGHT='14075260'
+				INDEX_N_BLOCKS='0'
+				ENABLE_JOB_MISSING_BLOCKS='true'
+				INDEX_MISSING_BLOCKS_RANGE='0'
+				FEE_EST_DEFAULT_START_BLOCK_HEIGHT='14075260'
+				ENABLE_TRANSACTION_STATS='true'
+				TRANSACTION_STATS_HISTORY_LENGTH_DAYS='366'
 			}
 			steps {
 				ansiColor('xterm') {
 					dir('./') {
 						sh 'make down'
 						sh 'make up-custom-core3-cd'
+						sh 'make print-config'
 					}
 				}
 			}

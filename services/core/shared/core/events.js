@@ -24,6 +24,7 @@ const {
 
 const {
 	reloadNextForgersCache,
+	reloadDelegateCache,
 	getNextForgers,
 } = require('./delegates');
 
@@ -37,19 +38,27 @@ const config = require('../../config.js');
 const logger = Logger();
 
 const events = {
-	newBlock: async () => {
-		await performLastBlockUpdate();
-		Signals.get('newBlock').dispatch(await getBlocks({ limit: 1 }));
+	newBlock: async (newBlock) => {
+		logger.debug(`New block arrived: ${newBlock.id} at height ${newBlock.height}`);
+		performLastBlockUpdate(newBlock);
+
+		logger.debug(`============== Dispatching block to index: ${newBlock.id} at height ${newBlock.height} ==============`);
+		const response = await getBlocks({ limit: 1 });
+		logger.debug(`============== 'newBlock' signal: ${Signals.get('newBlock')} ==============`);
+		Signals.get('newBlock').dispatch(response);
 	},
 	deleteBlock: async (block) => {
 		await deleteBlock(block);
+		logger.debug(`============== 'deleteBlock' signal: ${Signals.get('deleteBlock')} ==============`);
 		Signals.get('deleteBlock').dispatch(block);
 	},
 	newRound: async () => {
+		await reloadDelegateCache();
 		await reloadNextForgersCache();
 		const limit = core.getSDKVersion() >= 4 ? 103 : 101;
 		const nextForgers = await getNextForgers({ limit, offset: 0 });
 		const response = { nextForgers: nextForgers.data.map(forger => forger.address) };
+		logger.debug(`============== 'newRound' signal: ${Signals.get('newRound')} ==============`);
 		Signals.get('newRound').dispatch(response);
 	},
 	calculateFeeEstimate: async () => {
@@ -63,6 +72,7 @@ const events = {
 				const feeEstimate = await calculateEstimateFeeByteQuick();
 
 				// TODO: Make a better control over the estimate process
+				logger.debug(`============== 'newFeeEstimate' signal: ${Signals.get('newFeeEstimate')} ==============`);
 				Signals.get('newFeeEstimate').dispatch(feeEstimate);
 			}
 		}
@@ -71,9 +81,12 @@ const events = {
 
 const init = () => {
 	core.events.register(events);
-	Object.keys(events).forEach((eventName) => Signals.register(eventName));
+	Object.keys(events).forEach((eventName) => Signals.get(eventName));
 };
 
 init();
+
+// Re-subscribe to the events whenever a new client is instantiated
+Signals.get('newApiClient').add(() => { init(); });
 
 module.exports = { init };

@@ -24,7 +24,7 @@ module.exports = {
 	tags: ['Transactions'],
 	params: {
 		transactionId: { optional: true, type: 'string', min: 1, max: 64 },
-		moduleAssetId: { optional: true, type: 'string', min: 1, max: 3 },
+		moduleAssetId: { optional: true, type: 'string', min: 1, max: 21 },
 		moduleAssetName: { optional: true, type: 'string', min: 1 },
 		address: { optional: true, type: 'string', min: 38, max: 41, pattern: /^lsk[a-hjkm-z2-9]{38}$/ },
 		senderAddress: { optional: true, type: 'string', min: 3, max: 41, pattern: /^lsk[a-hjkm-z2-9]{38}$/ },

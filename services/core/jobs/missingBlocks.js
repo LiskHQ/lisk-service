@@ -17,21 +17,22 @@ const logger = require('lisk-service-framework').Logger();
 const core = require('../shared/core');
 const config = require('../config');
 
-const genesisHeight = core.getGenesisHeight();
-
 module.exports = [
 	{
 		name: 'index.missing.blocks',
 		description: 'Keep the blocks index up-to-date',
 		schedule: '0 */3 * * *', // Every 3 hours
-		updateOnInit: true,
-		init: () => { },
 		controller: async () => {
 			if (config.jobs.missingBlocks.enabled) {
 				logger.debug('Checking for missing blocks in index...');
+				const indexStartHeight = core.getIndexStartHeight();
 				const toHeight = (await core.getNetworkStatus()).data.height;
+
+				// fromHeight should not be lower than indexStartHeight
+				// indexStartHeight is the lowest indexing height determined based on INDEX_N_BLOCKS
 				const fromHeight = config.jobs.missingBlocks.range > 0
-					? toHeight - config.jobs.missingBlocks.range : genesisHeight;
+					? Math.max(toHeight - config.jobs.missingBlocks.range, indexStartHeight)
+					: indexStartHeight;
 				await core.indexMissingBlocks(fromHeight, toHeight);
 			}
 		},

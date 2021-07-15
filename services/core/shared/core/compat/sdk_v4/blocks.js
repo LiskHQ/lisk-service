@@ -59,6 +59,7 @@ const indexBlocks = async job => {
 	blocks.forEach(block => {
 		if (block.numberOfTransactions > 0) {
 			blockIdx.upsert(block);
+			logger.debug(`============== 'indexTransactions' signal: ${Signals.get('indexTransactions')} ==============`);
 			Signals.get('indexTransactions').dispatch(block.id);
 		}
 	});
@@ -137,6 +138,7 @@ const buildIndex = async (from, to) => {
 		/* eslint-enable no-await-in-loop */
 	}
 	logger.info(`Finished building block index (${from}-${to})`);
+	logger.debug(`============== 'blockIndexReady' signal: ${Signals.get('blockIndexReady')} ==============`);
 	Signals.get('blockIndexReady').dispatch(true);
 };
 

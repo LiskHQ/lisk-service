@@ -106,6 +106,7 @@ const {
 	init,
 	indexMissingBlocks,
 	getGenesisHeight,
+	getIndexStartHeight,
 } = require('./compat');
 
 const events = require('./events');
@@ -172,4 +173,5 @@ module.exports = {
 	init,
 	indexMissingBlocks,
 	getGenesisHeight,
+	getIndexStartHeight,
 };

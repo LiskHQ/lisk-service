@@ -82,9 +82,9 @@ describe('Transactions API', () => {
 			expect(response.meta).toMap(metaSchema);
 		});
 
-		it('invalid moduleAssetId -> 400', async () => {
-			const response = await api.get(`${endpoint}?moduleAssetId=-124`, 400);
-			expect(response).toMap(badRequestSchema);
+		it('invalid moduleAssetId -> 404', async () => {
+			const response = await api.get(`${endpoint}?moduleAssetId=-124`, 404);
+			expect(response).toMap(notFoundSchema);
 		});
 
 		it('empty moduleAssetId ->  ok', async () => {

@@ -13,7 +13,7 @@
  * Removal or modification of this copyright notice is prohibited.
  *
  */
-const { Signals } = require('lisk-service-framework');
+const { Logger, Signals } = require('lisk-service-framework');
 
 const coreApi = require('./coreApi');
 
@@ -50,6 +50,8 @@ const {
 
 const events = require('./events');
 
+const logger = Logger();
+
 const numOfActiveDelegates = 101;
 
 const peerStates = {
@@ -77,6 +79,7 @@ const getForgingStats = async address => {
 };
 
 const init = () => {
+	logger.debug(`============== 'blockIndexReady' signal: ${Signals.get('blockIndexReady')} ==============`);
 	Signals.get('blockIndexReady').dispatch(true);
 };
 
@@ -91,6 +94,7 @@ module.exports = {
 	getAccounts,
 	getBlocks,
 	getGenesisHeight,
+	getIndexStartHeight: nop,
 	deleteBlock: nop,
 	indexMissingBlocks: nop,
 	getMultisignatureGroups,

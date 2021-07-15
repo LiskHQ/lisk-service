@@ -13,8 +13,9 @@
  * Removal or modification of this copyright notice is prohibited.
  *
  */
+const BluebirdPromise = require('bluebird');
 const { Utils } = require('lisk-service-framework');
-const { getAccounts } = require('./accounts');
+const { getIndexedAccountInfo } = require('./accountUtils');
 const { getBase32AddressFromHex } = require('./accountUtils');
 
 const coreApi = require('./coreApi');
@@ -29,19 +30,21 @@ const getForgers = async params => {
 			...forger,
 			address: getBase32AddressFromHex(forger.address),
 		}));
-	const forgerAddresses = forgers.data.map(forger => forger.address);
-	const forgerAccounts = await getAccounts({
-		addresses: forgerAddresses,
-		limit: forgerAddresses.length,
-	});
-	forgers.data = forgers.data.map(forger => {
-		const [filteredAcc] = forgerAccounts.data.filter(account => account.address === forger.address);
-		if (filteredAcc) {
-			forger.username = filteredAcc.dpos.delegate.username;
-			forger.totalVotesReceived = Number(filteredAcc.dpos.delegate.totalVotesReceived);
-		}
-		return forger;
-	});
+
+	forgers.data = await BluebirdPromise.map(
+		forgers.data,
+		async forger => {
+			const account = await getIndexedAccountInfo({ address: forger.address });
+			forger.username = account && account.username
+				? account.username
+				: undefined;
+			forger.totalVotesReceived = account && account.totalVotesReceived
+				? Number(account.totalVotesReceived)
+				: undefined;
+			return forger;
+		},
+		{ concurrency: forgers.data.length },
+	);
 	return isProperObject(forgers) && Array.isArray(forgers.data) ? forgers : [];
 };
 

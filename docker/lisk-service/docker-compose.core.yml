@@ -14,6 +14,9 @@ services:
     environment:
       - LISK_CORE_HTTP=${LISK_CORE_HTTP} # legacy (core2)
       - LISK_CORE_WS=${LISK_CORE_WS}
+      - GENESIS_HEIGHT=${GENESIS_HEIGHT}
+      - FEE_EST_DEFAULT_START_BLOCK_HEIGHT=${FEE_EST_DEFAULT_START_BLOCK_HEIGHT}
+      - TRANSACTION_STATS_HISTORY_LENGTH_DAYS=${TRANSACTION_STATS_HISTORY_LENGTH_DAYS}
     env_file:
       - ./lisk-service/env/common.env
       - ./lisk-service/env/core.env

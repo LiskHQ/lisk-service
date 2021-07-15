@@ -123,11 +123,11 @@ describe('Method get.blocks', () => {
 
 	describe('is able to retireve block details by height', () => {
 		it('known block by height -> ok', async () => {
-			const response = await getBlocks({ height: '1' });
+			const response = await getBlocks({ height: `${refBlock.height}` });
 			expect(response).toMap(jsonRpcEnvelopeSchema);
 			const { result } = response;
 			expect(result.data.length).toEqual(1);
-			expect(result.data[0]).toMap(blockSchemaVersion5, { height: 1 });
+			expect(result.data[0]).toMap(blockSchemaVersion5, { height: refBlock.height });
 		});
 
 		it('height = 0 -> -32602', async () => {
@@ -467,6 +467,30 @@ describe('Method get.blocks', () => {
 				}
 			}
 			expect(result.meta).toMap(metaSchema);
+		});
+
+		it('returns empty response when queried with blockId and wrong height', async () => {
+			const height = String(refBlock.height - 10);
+			const response = await getBlocks({ blockId: refBlock.id, height }).catch(e => e);
+			expect(response).toMap(emptyResponseSchema);
+			const { result } = response;
+			expect(result).toMap(emptyResultEnvelopeSchema);
+		});
+
+		it('returns empty response when queried with blockId and wrong timestamp', async () => {
+			const timestamp = String(moment(refBlock.timestamp * (10 ** 3)).subtract(1, 'day').unix());
+			const response = await getBlocks({ blockId: refBlock.id, timestamp }).catch(e => e);
+			expect(response).toMap(emptyResponseSchema);
+			const { result } = response;
+			expect(result).toMap(emptyResultEnvelopeSchema);
+		});
+
+		it('returns empty response when queried with blockId and wrong generatorUsername', async () => {
+			const generatorUsername = 'genesis_test';
+			const response = await getBlocks({ blockId: refBlock.id, generatorUsername }).catch(e => e);
+			expect(response).toMap(emptyResponseSchema);
+			const { result } = response;
+			expect(result).toMap(emptyResultEnvelopeSchema);
 		});
 
 		it('returns empty response when queried with blockId and non-zero offset', async () => {

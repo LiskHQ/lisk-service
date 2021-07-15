@@ -180,11 +180,7 @@ const getDelegates = async params => {
 
 const loadAllDelegates = async () => {
 	const maxCount = 10000;
-	if (sdkVersion <= 4) {
-		delegateList = await requestAll(coreApi.getDelegates, {}, maxCount);
-	} else {
-		delegateList = (await coreApi.getDelegates({ limit: maxCount })).data;
-	}
+	delegateList = await requestAll(coreApi.getDelegates, {}, maxCount);
 	await BluebirdPromise.map(
 		delegateList,
 		async delegate => {
@@ -225,8 +221,8 @@ const loadAllNextForgers = async () => {
 	if (sdkVersion <= 4) {
 		rawNextForgers = await requestAll(coreApi.getNextForgers, { limit: maxCount }, maxCount);
 	} else {
-		rawNextForgers = (await coreApi.getForgers({ limit: maxCount, offset: nextForgers.length }))
-			.data;
+		const { data } = await coreApi.getForgers({ limit: maxCount, offset: nextForgers.length });
+		rawNextForgers = data;
 	}
 	logger.info(`Updated next forgers list with ${rawNextForgers.length} delegates.`);
 };

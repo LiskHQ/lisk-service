@@ -22,12 +22,13 @@ const config = require('../../../../config');
 
 const register = async (events) => {
 	const apiClient = await getApiClient();
-	logger.info(`Registering ${config.endpoints.liskWs} for blockchain events`);
+	logger.info(`(Re-)registering ${config.endpoints.liskWs} for blockchain events`);
 
 	apiClient.subscribe('app:block:new', async data => {
 		try {
 			const incomingBlock = apiClient.block.decode(Buffer.from(data.block, 'hex'));
 			const [newBlock] = await normalizeBlocks([incomingBlock]);
+			logger.debug(`New block forged: ${newBlock.id} at height ${newBlock.height}`);
 			events.newBlock(newBlock);
 			events.calculateFeeEstimate();
 		} catch (err) {
@@ -39,6 +40,7 @@ const register = async (events) => {
 		try {
 			const incomingBlock = apiClient.block.decode(Buffer.from(data.block, 'hex'));
 			const [deletedBlock] = await normalizeBlocks([incomingBlock]);
+			logger.debug(`Block deleted: ${deletedBlock.id} at height ${deletedBlock.height}`);
 			events.deleteBlock(deletedBlock);
 		} catch (err) {
 			logger.error(err.message);
@@ -46,6 +48,7 @@ const register = async (events) => {
 	});
 
 	apiClient.subscribe('app:chain:validators:change', data => {
+		logger.debug(`Chain validators updated: ${data}`);
 		events.newRound(data);
 	});
 };

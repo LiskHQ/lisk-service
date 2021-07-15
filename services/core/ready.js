@@ -60,6 +60,7 @@ Signals.get('newBlock').add(async () => {
 	}
 
 	// Core reports readiness only if all services available
+	logger.debug(`============== 'coreServiceReady' signal: ${Signals.get('coreServiceReady')} ==============`);
 	if (isCoreReady()) Signals.get('coreServiceReady').dispatch(true);
 });
 

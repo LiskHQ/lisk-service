@@ -66,6 +66,7 @@ const indexAccounts = async job => {
 	const accountsDB = await getAccountsIndex();
 	accounts.forEach(account => {
 		account.username = account.dpos.delegate.username || null;
+		account.totalVotesReceived = account.dpos.delegate.totalVotesReceived;
 		account.balance = account.token.balance;
 		return account;
 	});
@@ -122,7 +123,15 @@ const indexAccountsbyAddress = async (addressesToIndex, isGenesisBlockAccount = 
 		},
 		{ concurrency: addressesToIndex.length },
 	);
-	await indexAccountsByAddressQueue.add('indexAccountsByAddressQueue', { accounts: accountsToIndex });
+
+	const PAGE_SIZE = 100;
+	const NUM_PAGES = Math.ceil(accountsToIndex.length / PAGE_SIZE);
+	for (let i = 0; i < NUM_PAGES; i++) {
+		// eslint-disable-next-line no-await-in-loop
+		await indexAccountsByAddressQueue.add('indexAccountsByAddressQueue', {
+			accounts: accountsToIndex.slice(i * PAGE_SIZE, (i + 1) * PAGE_SIZE),
+		});
+	}
 };
 
 const resolveAccountsInfo = async accounts => {
@@ -179,18 +188,20 @@ const resolveDelegateInfo = async accounts => {
 
 				const [lastForgedBlock = {}] = await blocksDB.find({
 					generatorPublicKey: account.publicKey,
+					sort: 'height:desc',
 					limit: 1,
 				});
 				account.dpos.delegate.lastForgedHeight = lastForgedBlock.height || null;
 
 				// Iff the COMPLETE blockchain is SUCCESSFULLY indexed
 				if (getIsSyncFullBlockchain() && getIndexReadyStatus()) {
-					const {
-						rewards,
-						producedBlocks,
-					} = await getIndexedAccountInfo({ publicKey: account.publicKey });
-					account.rewards = rewards || 0;
-					account.producedBlocks = producedBlocks || 0;
+					const accountInfo = await getIndexedAccountInfo({ publicKey: account.publicKey });
+					account.rewards = accountInfo && accountInfo.rewards
+						? accountInfo.rewards
+						: 0;
+					account.producedBlocks = accountInfo && accountInfo.producedBlocks
+						? accountInfo.producedBlocks
+						: 0;
 
 					// Check for the delegate registration transaction
 					const [delegateRegTx = {}] = await transactionsDB.find({
@@ -235,7 +246,15 @@ const indexAccountsbyPublicKey = async (accountInfoArray) => {
 		},
 		{ concurrency: accountInfoArray.length },
 	);
-	await indexAccountsByPublicKeyQueue.add('indexAccountsByPublicKeyQueue', { accounts: accountsToIndex });
+
+	const PAGE_SIZE = 100;
+	const NUM_PAGES = Math.ceil(accountsToIndex.length / PAGE_SIZE);
+	for (let i = 0; i < NUM_PAGES; i++) {
+		// eslint-disable-next-line no-await-in-loop
+		await indexAccountsByPublicKeyQueue.add('indexAccountsByPublicKeyQueue', {
+			accounts: accountsToIndex.slice(i * PAGE_SIZE, (i + 1) * PAGE_SIZE),
+		});
+	}
 };
 
 const getLegacyAccountInfo = async ({ publicKey }) => {
@@ -411,20 +430,24 @@ const getMultisignatureGroups = async account => {
 		await BluebirdPromise.map(
 			account.keys.mandatoryKeys,
 			async publicKey => {
-				const [accountByPublicKey = {}] = (await getAccounts({ publicKey })).data;
-				accountByPublicKey.publicKey = publicKey;
-				accountByPublicKey.isMandatory = true;
-				multisignatureAccount.members.push(accountByPublicKey);
+				const mandatoryAccount = {
+					address: getBase32AddressFromPublicKey(publicKey),
+					publicKey,
+					isMandatory: true,
+				};
+				multisignatureAccount.members.push(mandatoryAccount);
 			},
 			{ concurrency: account.keys.mandatoryKeys.length },
 		);
 		await BluebirdPromise.map(
 			account.keys.optionalKeys,
 			async publicKey => {
-				const [accountByPublicKey = {}] = (await getAccounts({ publicKey })).data;
-				accountByPublicKey.publicKey = publicKey;
-				accountByPublicKey.isMandatory = false;
-				multisignatureAccount.members.push(accountByPublicKey);
+				const optionalAccount = {
+					address: getBase32AddressFromPublicKey(publicKey),
+					publicKey,
+					isMandatory: false,
+				};
+				multisignatureAccount.members.push(optionalAccount);
 			},
 			{ concurrency: account.keys.optionalKeys.length },
 		);

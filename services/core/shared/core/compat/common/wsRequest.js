@@ -13,8 +13,11 @@
  * Removal or modification of this copyright notice is prohibited.
  *
  */
+const { Logger, Signals } = require('lisk-service-framework');
 const { createWSClient } = require('@liskhq/lisk-api-client');
 const config = require('../../../../config');
+
+const logger = Logger();
 
 const liskAddress = config.endpoints.liskWs;
 let clientCache;
@@ -23,6 +26,10 @@ const getApiClient = async () => {
 	try {
 		if (!clientCache || !clientCache._channel.isAlive) {
 			clientCache = await createWSClient(`${liskAddress}/ws`);
+
+			// Inform listeners about the newly created ApiClient
+			logger.debug(`============== 'newApiClient' signal: ${Signals.get('newApiClient')} ==============`);
+			Signals.get('newApiClient').dispatch();
 		}
 		return clientCache;
 	} catch (err) {

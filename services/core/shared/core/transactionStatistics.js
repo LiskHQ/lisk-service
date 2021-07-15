@@ -250,6 +250,7 @@ const fetchTransactionsForPastNDays = async (n, forceReload = false) => {
 const init = async historyLengthDays => {
 	Signals.get('blockIndexReady').add(async () => {
 		await fetchTransactionsForPastNDays(historyLengthDays, true);
+		logger.debug(`============== 'transactionStatsReady' signal: ${Signals.get('transactionStatsReady')} ==============`);
 		Signals.get('transactionStatsReady').dispatch(historyLengthDays);
 	});
 };

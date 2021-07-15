@@ -134,7 +134,7 @@ broker.createService({
 	events: {
 		'block.change': (payload) => sendSocketIoEvent('update.block', mapper(payload, blocksDefinition)),
 		'transactions.new': (payload) => sendSocketIoEvent('update.transactions', mapper(payload, transactionsDefinition)),
-		'round.change': (payload) => sendSocketIoEvent('update.round', mapper(payload, forgersDefinition)),
+		'round.change': (payload) => sendSocketIoEvent('update.round', payload),
 		'forgers.change': (payload) => sendSocketIoEvent('update.forgers', mapper(payload, forgersDefinition)),
 		'update.fee_estimates': (payload) => sendSocketIoEvent('update.fee_estimates', mapper(payload, feesDefinition)),
 		'coreService.Ready': (payload) => updateSvcStatus(payload),

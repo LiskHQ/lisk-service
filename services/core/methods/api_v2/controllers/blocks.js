@@ -15,16 +15,12 @@
  */
 const {
 	HTTP,
-	Utils,
 	Exceptions: { ValidationException, NotFoundException },
 } = require('lisk-service-framework');
 
 const { StatusCodes: { NOT_FOUND, BAD_REQUEST } } = HTTP;
-const ObjectUtilService = Utils.Data;
 
 const Core = require('../../../shared/core');
-
-const { isEmptyArray } = ObjectUtilService;
 
 const getBlocks = async params => {
 	try {
@@ -48,18 +44,6 @@ const getBlocks = async params => {
 		}
 
 		const response = await Core.getBlocks(params);
-
-		if (typeof params.blockId === 'string') {
-			if (isEmptyArray(response.data)) {
-				throw new NotFoundException(`Block ID ${params.blockId} not found.`);
-			}
-		}
-
-		if (typeof params.height === 'string') {
-			if (isEmptyArray(response.data)) {
-				throw new NotFoundException(`Height ${params.height} not found.`);
-			}
-		}
 
 		return {
 			data: response.data,

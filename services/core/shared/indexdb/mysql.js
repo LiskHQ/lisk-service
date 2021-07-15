@@ -208,6 +208,8 @@ const getDbInstance = async (tableName, tableConfig, connEndpoint = config.endpo
 				propBetween => {
 					if (propBetween.from) query.where(propBetween.property, '>=', propBetween.from);
 					if (propBetween.to) query.where(propBetween.property, '<=', propBetween.to);
+					if (propBetween.greaterThan) query.where(propBetween.property, '>', propBetween.greaterThan);
+					if (propBetween.lowerThan) query.where(propBetween.property, '<', propBetween.lowerThan);
 				});
 		}
 
@@ -277,6 +279,8 @@ const getDbInstance = async (tableName, tableConfig, connEndpoint = config.endpo
 				propBetween => {
 					if (propBetween.from) query.where(propBetween.property, '>=', propBetween.from);
 					if (propBetween.to) query.where(propBetween.property, '<=', propBetween.to);
+					if (propBetween.greaterThan) query.where(propBetween.property, '>', propBetween.greaterThan);
+					if (propBetween.lowerThan) query.where(propBetween.property, '<', propBetween.lowerThan);
 				});
 		}
 

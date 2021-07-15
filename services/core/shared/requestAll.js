@@ -30,21 +30,19 @@ const requestAll = async (fn, params, limit) => {
 		: firstRequest.meta.total;
 
 	if (maxAmount > oneRequestLimit) {
-		const pages = [...Array(Math.ceil(maxAmount / oneRequestLimit)).keys()];
-		pages.shift();
-
-		const collection = await pages.reduce((promise, page) => promise.then(() => fn(
-			{
+		for (let page = 1; page < Math.ceil(maxAmount / oneRequestLimit); page++) {
+			/* eslint-disable no-await-in-loop */
+			const result = await fn({
 				...params,
 				...{
 					limit: oneRequestLimit,
 					offset: oneRequestLimit * page,
 				},
-			})).then((result) => {
-			result.data.forEach((item) => { data.push(item); });
-			return data;
-		}), Promise.resolve());
-		return collection;
+			});
+			if (!result.data.length) break;
+			data.push(...result.data);
+			/* eslint-enable no-await-in-loop */
+		}
 	}
 	return data;
 };

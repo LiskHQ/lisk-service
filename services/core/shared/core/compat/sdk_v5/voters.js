@@ -130,7 +130,14 @@ const getVoters = async params => {
 
 	let resultSet;
 	if (params.aggregate) {
-		resultSet = await votesAggregateDB.find({ sort: 'timestamp:desc', receivedAddress: params.receivedAddress });
+		resultSet = await votesAggregateDB.find({
+			sort: 'timestamp:desc',
+			receivedAddress: params.receivedAddress,
+			propBetweens: [{
+				property: 'amount',
+				greaterThan: '0',
+			}],
+		});
 	} else {
 		resultSet = await votesDB.find({ sort: 'timestamp:desc', receivedAddress: params.receivedAddress });
 	}
@@ -152,7 +159,13 @@ const getVoters = async params => {
 		address: params.receivedAddress,
 		username: accountInfo && accountInfo.username ? accountInfo.username : undefined,
 		votesReceived: params.aggregate
-			? await votesAggregateDB.count({ receivedAddress: params.receivedAddress })
+			? await votesAggregateDB.count({
+				receivedAddress: params.receivedAddress,
+				propBetweens: [{
+					property: 'amount',
+					greaterThan: '0',
+				}],
+			})
 			: await votesDB.count({ receivedAddress: params.receivedAddress }),
 	};
 	votes.data.votes = votes.data.votes.slice(params.offset, params.offset + params.limit);

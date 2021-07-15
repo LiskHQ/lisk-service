@@ -47,6 +47,7 @@ config.endpoints.mysql = process.env.SERVICE_CORE_MYSQL || 'mysql://lisk:passwor
  * such as transactions, accounts, votes etc.
  */
 config.indexNumOfBlocks = Number(process.env.INDEX_N_BLOCKS || 202);
+config.genesisHeight = Number(process.env.GENESIS_HEIGHT || 0);
 
 config.transactionStatistics = {
 	enabled: Boolean(String(process.env.ENABLE_TRANSACTION_STATS).toLowerCase() === 'true'),

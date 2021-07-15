@@ -13,7 +13,7 @@
  * Removal or modification of this copyright notice is prohibited.
  *
  */
-const { Signals } = require('lisk-service-framework');
+const { Logger, Signals } = require('lisk-service-framework');
 
 const {
 	getBlocks,
@@ -30,7 +30,10 @@ const { getVoters } = require('./voters');
 const events = require('./events');
 const { getNetworkStatus } = require('./network');
 
+const logger = Logger();
+
 const init = () => {
+	logger.debug(`============== 'blockIndexReady' signal: ${Signals.get('blockIndexReady')} ==============`);
 	Signals.get('blockIndexReady').dispatch(true);
 };
 

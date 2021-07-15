@@ -97,6 +97,7 @@ const reload = async () => {
 	peerStore.disconnected = peerStore.peers.filter(o => o.state === peerStates.DISCONNECTED);
 	peerStore.statistics = await refreshStatistics();
 	logger.debug('Updated peer cache.');
+	logger.debug(`============== 'peerReload' signal: ${Signals.get('peerReload')} ==============`);
 	Signals.get('peerReload').dispatch(peerStore.peers);
 };
 

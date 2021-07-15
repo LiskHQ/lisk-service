@@ -23,6 +23,7 @@ module.exports = {
 		username: { type: 'string' },
 		rewards: { type: 'bigInteger', defaultValue: 0 },
 		producedBlocks: { type: 'integer', defaultValue: 0 },
+		totalVotesReceived: { type: 'string' },
 	},
 	indexes: {
 		address: { type: 'key' },

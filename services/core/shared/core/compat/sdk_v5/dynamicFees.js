@@ -14,7 +14,7 @@
  *
  */
 const BluebirdPromise = require('bluebird');
-const { CacheRedis } = require('lisk-service-framework');
+const { CacheRedis, Logger } = require('lisk-service-framework');
 
 const { getBlocks } = require('./blocks');
 const { getApiClient } = require('../common');
@@ -30,6 +30,8 @@ const getBlocksIndex = () => mysqlIndex('blocks', blocksIndexSchema);
 const getTransactionsIndex = () => mysqlIndex('transactions', transactionsIndexSchema);
 
 const cacheRedisFees = CacheRedis('fees', config.endpoints.redis);
+
+const logger = Logger();
 
 const calculateBlockSize = async block => {
 	const blocksDB = await getBlocksIndex();
@@ -142,10 +144,13 @@ const getEstimateFeeByteForBlock = async (blockBatch, innerPrevFeeEstPerByte) =>
 
 const getEstimateFeeByteForBatch = async (fromHeight, toHeight, cacheKey) => {
 	const transactionsDB = await getTransactionsIndex();
+	const { genesisHeight } = config;
+	const { defaultStartBlockHeight } = config.feeEstimates;
 
 	// Check if the starting height is permitted by config or adjust acc.
-	fromHeight = config.feeEstimates.defaultStartBlockHeight > fromHeight
-		? config.feeEstimates.defaultStartBlockHeight : fromHeight;
+	// Use incrementation to skip the genesis block - it is not needed
+	fromHeight = Math.max(...[defaultStartBlockHeight, genesisHeight + 1, fromHeight]
+		.filter(n => !Number.isNaN(n)));
 
 	const cachedFeeEstimate = await cacheRedisFees.get(cacheKey);
 
@@ -161,8 +166,11 @@ const getEstimateFeeByteForBatch = async (fromHeight, toHeight, cacheKey) => {
 	do {
 		/* eslint-disable no-await-in-loop */
 		const idealEMABatchSize = config.feeEstimates.emaBatchSize;
-		const finalEMABatchSize = idealEMABatchSize > prevFeeEstPerByte.blockHeight
-			? (prevFeeEstPerByte.blockHeight + 1) : idealEMABatchSize;
+		const finalEMABatchSize = (() => {
+			const maxEmaBasedOnHeight = prevFeeEstPerByte.blockHeight - genesisHeight;
+			if (idealEMABatchSize > maxEmaBasedOnHeight) return maxEmaBasedOnHeight + 1;
+			return idealEMABatchSize;
+		})();
 
 		blockBatch.data = await BluebirdPromise.map(
 			range(finalEMABatchSize),
@@ -191,6 +199,8 @@ const getEstimateFeeByteForBatch = async (fromHeight, toHeight, cacheKey) => {
 
 	Object.assign(feeEstPerByte, prevFeeEstPerByte);
 	await cacheRedisFees.set(cacheKey, feeEstPerByte);
+
+	logger.info(`Recalulated dynamic fees: L: ${feeEstPerByte.low} M: ${feeEstPerByte.med} H: ${feeEstPerByte.high}`);
 
 	return feeEstPerByte;
 };

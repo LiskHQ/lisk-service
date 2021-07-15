@@ -69,7 +69,7 @@ const validateParams = async params => {
 	}
 
 	if (params.username) {
-		const [accountInfo] = await getIndexedAccountInfo({ username: params.username });
+		const accountInfo = await getIndexedAccountInfo({ username: params.username });
 		if (!accountInfo || accountInfo.address === undefined) return new NotFoundException(`Account with username: ${params.username} does not exist`);
 		requestParams.senderPublicKey = accountInfo.publicKey;
 	}
