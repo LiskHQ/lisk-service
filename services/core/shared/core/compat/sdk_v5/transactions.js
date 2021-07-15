@@ -119,7 +119,9 @@ const normalizeTransaction = async txs => {
 					.forEach(vote => vote.delegateAddress = getBase32AddressFromHex(vote.delegateAddress));
 			}
 			return tx;
-		}, { concurrency: txs.length });
+		},
+		{ concurrency: txs.length },
+	);
 	return normalizedTransactions;
 };
 

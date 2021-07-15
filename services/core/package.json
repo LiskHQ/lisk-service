@@ -43,7 +43,7 @@
     "debug": "=4.1.1",
     "ioredis": "^4.27.1",
     "knex": "^0.95.4",
-    "lisk-service-framework": "https://github.com/LiskHQ/lisk-service/raw/0ba4de1b8dc37fd35f38ce122321345284f35771/framework/dist/lisk-service-framework-1.2.1.tgz",
+    "lisk-service-framework": "https://github.com/LiskHQ/lisk-service/raw/ef6b8e654ea1c4fd1389e7b10713c21afd238d8e/framework/dist/lisk-service-framework-1.2.2.tgz",
     "method-override": "^3.0.0",
     "moment": "=2.24.0",
     "mysql": "^2.18.1",
@@ -51,7 +51,8 @@
     "split": "^1.0.1",
     "sqlite3": "^5.0.2",
     "stack-trace": "0.0.10",
-    "string-similarity": "^4.0.4"
+    "string-similarity": "^4.0.4",
+    "tar": "^6.1.0"
   },
   "devDependencies": {
     "@babel/preset-env": "^7.14.0",

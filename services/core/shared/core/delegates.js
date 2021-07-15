@@ -180,7 +180,7 @@ const getDelegates = async params => {
 
 const loadAllDelegates = async () => {
 	const maxCount = 10000;
-	delegateList = await requestAll(coreApi.getDelegates, {}, maxCount);
+	delegateList = await requestAll(coreApi.getDelegates, { limit: 50 }, maxCount);
 	await BluebirdPromise.map(
 		delegateList,
 		async delegate => {

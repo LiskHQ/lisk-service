@@ -183,7 +183,7 @@ const getEstimateFeeByteForBatch = async (fromHeight, toHeight, cacheKey) => {
 					: [];
 				return block;
 			},
-			{ concurrency: finalEMABatchSize },
+			{ concurrency: 50 },
 		);
 
 		Object.assign(prevFeeEstPerByte,

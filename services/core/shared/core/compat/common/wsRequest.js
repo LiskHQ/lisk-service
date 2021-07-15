@@ -25,6 +25,7 @@ let clientCache;
 const getApiClient = async () => {
 	try {
 		if (!clientCache || !clientCache._channel.isAlive) {
+			if (clientCache) await clientCache.disconnect();
 			clientCache = await createWSClient(`${liskAddress}/ws`);
 
 			// Inform listeners about the newly created ApiClient
@@ -33,6 +34,8 @@ const getApiClient = async () => {
 		}
 		return clientCache;
 	} catch (err) {
+		logger.error(`Error instantiating WS client to ${liskAddress}`);
+		logger.error(err.message);
 		if (err.code === 'ECONNREFUSED') throw new Error('ECONNREFUSED: Unable to reach a network node');
 
 		return {

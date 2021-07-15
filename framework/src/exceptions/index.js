@@ -21,6 +21,7 @@ const NotFoundException = require('./NotFoundException');
 const NotImplementedException = require('./NotImplementedException');
 const ParseException = require('./ParseException');
 const ServiceUnavailableException = require('./ServiceUnavailableException');
+const TimeoutException = require('./TimeoutException');
 const TooManyRequestsException = require('./TooManyRequestsException');
 const UnauthorizedException = require('./UnauthorizedException');
 const ValidationException = require('./ValidationException');
@@ -34,6 +35,7 @@ module.exports = {
 	NotImplementedException,
 	ParseException,
 	ServiceUnavailableException,
+	TimeoutException,
 	TooManyRequestsException,
 	UnauthorizedException,
 	ValidationException,

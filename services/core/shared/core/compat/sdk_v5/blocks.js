@@ -360,7 +360,7 @@ const indexGenesisBlock = async () => {
 		.filter(account => account.address.length > 16) // Filter out reclaim accounts
 		.map(account => account.address);
 
-	const PAGE_SIZE = 100;
+	const PAGE_SIZE = 50;
 	const NUM_PAGES = Math.ceil(accountAddressesToIndex.length / PAGE_SIZE);
 	for (let i = 0; i < NUM_PAGES; i++) {
 		// eslint-disable-next-line no-await-in-loop
@@ -371,6 +371,7 @@ const indexGenesisBlock = async () => {
 	}
 	await indexTransactions([genesisBlock]);
 	await indexBlocksQueue.add('indexBlocksQueue', { blocks: [genesisBlock] });
+	logger.info('Finished indexing the genesis block');
 };
 
 const buildIndex = async (from, to) => {
@@ -381,7 +382,7 @@ const buildIndex = async (from, to) => {
 		return;
 	}
 
-	const MAX_BLOCKS_LIMIT_PP = 100;
+	const MAX_BLOCKS_LIMIT_PP = 50;
 	const numOfPages = Math.ceil((to + 1) / MAX_BLOCKS_LIMIT_PP - from / MAX_BLOCKS_LIMIT_PP);
 
 	for (let pageNum = 0; pageNum < numOfPages; pageNum++) {
@@ -508,7 +509,10 @@ const init = async () => {
 
 	// Check state of index and perform update
 	try {
-		await indexGenesisBlock();
+		await indexGenesisBlock().catch(err => {
+			logger.error(err.message);
+			logger.warn('Unable to index the Genesis block. Continuing with the remaining...');
+		});
 		await indexPastBlocks();
 	} catch (err) {
 		logger.warn('Unable to update block index');

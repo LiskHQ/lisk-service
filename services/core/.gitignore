@@ -60,3 +60,6 @@ xunit-report.xml
 
 # Embedded DB directory
 db_data
+
+# Genesis block download
+shared/core/compat/sdk_v5/static

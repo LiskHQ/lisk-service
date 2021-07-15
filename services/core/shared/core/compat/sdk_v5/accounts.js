@@ -121,10 +121,10 @@ const indexAccountsbyAddress = async (addressesToIndex, isGenesisBlockAccount = 
 			if (accountFromDB && accountFromDB.publicKey) account.publicKey = accountFromDB.publicKey;
 			return account;
 		},
-		{ concurrency: addressesToIndex.length },
+		{ concurrency: 50 },
 	);
 
-	const PAGE_SIZE = 100;
+	const PAGE_SIZE = 50;
 	const NUM_PAGES = Math.ceil(accountsToIndex.length / PAGE_SIZE);
 	for (let i = 0; i < NUM_PAGES; i++) {
 		// eslint-disable-next-line no-await-in-loop
@@ -244,10 +244,10 @@ const indexAccountsbyPublicKey = async (accountInfoArray) => {
 			}
 			return account;
 		},
-		{ concurrency: accountInfoArray.length },
+		{ concurrency: 50 },
 	);
 
-	const PAGE_SIZE = 100;
+	const PAGE_SIZE = 50;
 	const NUM_PAGES = Math.ceil(accountsToIndex.length / PAGE_SIZE);
 	for (let i = 0; i < NUM_PAGES; i++) {
 		// eslint-disable-next-line no-await-in-loop
